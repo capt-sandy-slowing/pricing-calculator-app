@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pricing Calculator</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Serif+Text&family=DM+Mono&display=swap">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -17,7 +18,7 @@
             <div class="calculator-grid">
                 <!-- Left panel: Business Model Calculator -->
                 <section class="panel" id="business-model-panel">
-                    <h2>Business Model</h2>
+                    <h2>Pricing Parameters</h2>
                     <div class="panel-content">
                         <div class="input-group">
                             <h3>Financial Targets</h3>
@@ -62,12 +63,9 @@
                             <h3>Currency Settings</h3>
                             <div class="currency-settings">
                                 <div class="base-currency-display">Base Currency: <strong id="base-currency-display">NZD</strong></div>
-                                <div class="currency-toggles" id="currency-toggles">
-                                    <!-- Currency toggles will be added here dynamically -->
+                                <div class="currency-list" id="currency-list">
+                                    <!-- Currency rows will be added here dynamically -->
                                 </div>
-                            </div>
-                            <div class="currency-rates" id="currency-rates">
-                                <!-- Currency rate inputs will be added here dynamically -->
                             </div>
                             <small>Enable currencies and set conversion rates (1 NZD = X)</small>
                         </div>
@@ -80,13 +78,17 @@
                             </div>
                             <div class="result">
                                 <span class="result-label">Required Hourly Rate:</span>
-                                <span class="result-value"><span class="currency">$</span><span id="required-hourly-rate">0.00</span></span>
-                                <div class="multi-currency" id="hourly-rate-currencies"></div>
+                                <div class="result-left">
+                                    <span class="base-currency-value"><span class="currency">$</span><span id="required-hourly-rate">0.00</span></span>
+                                </div>
+                                <div class="result-right" id="hourly-rate-currencies"></div>
                             </div>
                             <div class="result">
                                 <span class="result-label">Required Day Rate:</span>
-                                <span class="result-value"><span class="currency">$</span><span id="required-day-rate">0.00</span></span>
-                                <div class="multi-currency" id="day-rate-currencies"></div>
+                                <div class="result-left">
+                                    <span class="base-currency-value"><span class="currency">$</span><span id="required-day-rate">0.00</span></span>
+                                </div>
+                                <div class="result-right" id="day-rate-currencies"></div>
                             </div>
                         </div>
                     </div>
@@ -226,35 +228,49 @@
                             <h3>Project Summary</h3>
                             <div class="result">
                                 <span class="result-label">Base Project Cost:</span>
-                                <span class="result-value"><span class="currency">$</span><span id="base-project-cost">0.00</span></span>
-                                <div class="multi-currency" id="base-cost-currencies"></div>
+                                <div class="result-left">
+                                    <span class="base-currency-value"><span class="currency">$</span><span id="base-project-cost">0.00</span></span>
+                                </div>
+                                <div class="result-right" id="base-cost-currencies"></div>
                             </div>
                             <div class="result">
                                 <span class="result-label">Applied Uplift:</span>
-                                <span class="result-value"><span id="applied-uplift-percentage">0.00</span>% (<span class="currency">$</span><span id="applied-uplift-amount">0.00</span>)</span>
-                                <div class="multi-currency" id="uplift-amount-currencies"></div>
+                                <div class="result-left">
+                                    <span class="base-currency-value"><span id="applied-uplift-percentage">0.00</span>% (<span class="currency">$</span><span id="applied-uplift-amount">0.00</span>)</span>
+                                </div>
+                                <div class="result-right" id="uplift-amount-currencies"></div>
                             </div>
                             <div class="result">
                                 <span class="result-label">Applied Discount:</span>
-                                <span class="result-value"><span id="applied-discount-percentage">0.00</span>% (<span class="currency">$</span><span id="applied-discount-amount">0.00</span>)</span>
-                                <div class="multi-currency" id="discount-amount-currencies"></div>
+                                <div class="result-left">
+                                    <span class="base-currency-value"><span id="applied-discount-percentage">0.00</span>% (<span class="currency">$</span><span id="applied-discount-amount">0.00</span>)</span>
+                                </div>
+                                <div class="result-right" id="discount-amount-currencies"></div>
                             </div>
                             <div class="result highlight">
                                 <span class="result-label">Final Project Cost:</span>
-                                <span class="result-value"><span class="currency">$</span><span id="final-project-cost">0.00</span></span>
-                                <div class="multi-currency" id="final-cost-currencies"></div>
+                                <div class="result-left">
+                                    <span class="base-currency-value"><span class="currency">$</span><span id="final-project-cost">0.00</span></span>
+                                </div>
+                                <div class="result-right" id="final-cost-currencies"></div>
                             </div>
                             <div class="comparison">
-                                <div class="comparison-row">
-                                    <span class="comparison-label">Required Day Rate:</span>
-                                    <span class="comparison-value"><span class="currency">$</span><span id="comparison-required-day-rate">0.00</span></span>
-                                    <div class="multi-currency" id="comparison-day-rate-currencies"></div>
+                                <div class="result">
+                                    <span class="result-label">Required Day Rate:</span>
+                                    <div class="result-left">
+                                        <span class="base-currency-value"><span class="currency">$</span><span id="comparison-required-day-rate">0.00</span></span>
+                                    </div>
+                                    <div class="result-right" id="comparison-day-rate-currencies"></div>
                                 </div>
-                                <div class="comparison-row">
-                                    <span class="comparison-label">Actual Day Rate:</span>
-                                    <span class="comparison-value"><span class="currency">$</span><span id="actual-day-rate">0.00</span></span>
-                                    <span class="comparison-diff" id="day-rate-diff">(0% difference)</span>
-                                    <div class="multi-currency" id="actual-day-rate-currencies"></div>
+                                <div class="result">
+                                    <span class="result-label">Actual Day Rate:</span>
+                                    <div class="result-left">
+                                        <span class="base-currency-value">
+                                            <span class="currency">$</span><span id="actual-day-rate">0.00</span>
+                                            <span class="comparison-diff" id="day-rate-diff">(0% difference)</span>
+                                        </span>
+                                    </div>
+                                    <div class="result-right" id="actual-day-rate-currencies"></div>
                                 </div>
                             </div>
                         </div>

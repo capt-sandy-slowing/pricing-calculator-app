@@ -47,13 +47,58 @@ function initializeBusinessModelInputs() {
     const hoursPerWeekInput = document.getElementById('hours-per-week');
     
     // Add event listeners to update model on input change
-    [salaryBudgetInput, growthBudgetInput, workingWeeksInput, teamMembersInput, hoursPerWeekInput].forEach(input => {
+    [workingWeeksInput, teamMembersInput, hoursPerWeekInput].forEach(input => {
         input.addEventListener('input', updateBusinessModel);
     });
     
+    // Format financial inputs with commas
+    [salaryBudgetInput, growthBudgetInput].forEach(input => {
+        // Remove type="number" to allow for formatted input
+        input.type = "text";
+        
+        // Initial formatting if value exists
+        if (input.value) {
+            input.value = formatNumberInput(parseFloat(input.value));
+        }
+        
+        // Add input event listener for formatting and updating
+        input.addEventListener('input', (e) => {
+            // Store cursor position
+            const cursorPos = e.target.selectionStart;
+            const originalLength = e.target.value.length;
+            
+            // Strip non-numeric characters for calculation
+            const numericValue = e.target.value.replace(/[^0-9]/g, '');
+            
+            // Format for display
+            if (numericValue.length > 0) {
+                const formattedValue = formatNumberInput(parseInt(numericValue, 10));
+                e.target.value = formattedValue;
+                
+                // Adjust cursor position based on change in length
+                const newLength = e.target.value.length;
+                const newPosition = cursorPos + (newLength - originalLength);
+                e.target.setSelectionRange(newPosition, newPosition);
+            }
+            
+            // Update the business model
+            updateBusinessModel();
+        });
+    });
+    
     // Set initial values
-    salaryBudgetInput.value = businessModel.salaryBudget || '';
-    growthBudgetInput.value = businessModel.growthBudget || '';
+    if (businessModel.salaryBudget > 0) {
+        salaryBudgetInput.value = formatNumberInput(businessModel.salaryBudget);
+    } else {
+        salaryBudgetInput.value = '';
+    }
+    
+    if (businessModel.growthBudget > 0) {
+        growthBudgetInput.value = formatNumberInput(businessModel.growthBudget);
+    } else {
+        growthBudgetInput.value = '';
+    }
+    
     workingWeeksInput.value = businessModel.workingWeeks;
     teamMembersInput.value = businessModel.teamMembers;
     hoursPerWeekInput.value = businessModel.hoursPerWeek;
@@ -217,9 +262,12 @@ function initializeFactorManagement() {
  * Update business model based on input values
  */
 function updateBusinessModel() {
-    // Get input values
-    const salaryBudget = parseFloat(document.getElementById('salary-budget').value) || 0;
-    const growthBudget = parseFloat(document.getElementById('growth-budget').value) || 0;
+    // Get input values, removing non-numeric characters from formatted inputs
+    const salaryBudgetStr = document.getElementById('salary-budget').value.replace(/[^0-9.-]/g, '');
+    const growthBudgetStr = document.getElementById('growth-budget').value.replace(/[^0-9.-]/g, '');
+    
+    const salaryBudget = parseFloat(salaryBudgetStr) || 0;
+    const growthBudget = parseFloat(growthBudgetStr) || 0;
     const workingWeeks = parseFloat(document.getElementById('working-weeks').value) || 0;
     const teamMembers = parseFloat(document.getElementById('team-members').value) || 0;
     const hoursPerWeek = parseFloat(document.getElementById('hours-per-week').value) || 0;
@@ -335,7 +383,7 @@ function renderUpliftFactors() {
     // Update allocation bar
     const validation = projectCalculator.validateUpliftAllocations();
     allocationProgress.style.width = `${Math.min(100, validation.total)}%`;
-    allocationProgress.style.backgroundColor = validation.valid ? '#3498db' : '#e74c3c';
+    allocationProgress.style.backgroundColor = validation.valid ? '#4CAF50' : '#e74c3c';
     allocationPercentage.textContent = validation.total.toFixed(1);
 }
 
@@ -370,7 +418,7 @@ function renderDiscountFactors() {
     // Update allocation bar
     const validation = projectCalculator.validateDiscountAllocations();
     allocationProgress.style.width = `${Math.min(100, validation.total)}%`;
-    allocationProgress.style.backgroundColor = validation.valid ? '#3498db' : '#e74c3c';
+    allocationProgress.style.backgroundColor = validation.valid ? '#4CAF50' : '#e74c3c';
     allocationPercentage.textContent = validation.total.toFixed(1);
 }
 
@@ -434,9 +482,9 @@ function initializeExportImport() {
                 // Update UI with imported data
                 document.getElementById('client-name').value = projectCalculator.clientName;
                 
-                // Update all displays
-                document.getElementById('salary-budget').value = projectCalculator.businessModel.salaryBudget;
-                document.getElementById('growth-budget').value = projectCalculator.businessModel.growthBudget;
+                // Update all displays with formatted values
+                document.getElementById('salary-budget').value = formatNumberInput(projectCalculator.businessModel.salaryBudget);
+                document.getElementById('growth-budget').value = formatNumberInput(projectCalculator.businessModel.growthBudget);
                 document.getElementById('working-weeks').value = projectCalculator.businessModel.workingWeeks;
                 document.getElementById('team-members').value = projectCalculator.businessModel.teamMembers;
                 document.getElementById('hours-per-week').value = projectCalculator.businessModel.hoursPerWeek;
@@ -445,17 +493,8 @@ function initializeExportImport() {
                 document.getElementById('max-discount').value = projectCalculator.maxDiscount;
                 
                 // Update currency settings UI
-                Object.entries(projectCalculator.currencies).forEach(([code, currency]) => {
-                    if (code !== projectCalculator.baseCurrency) {
-                        // Update toggle state
-                        const toggle = document.getElementById(`currency-toggle-${code}`);
-                        if (toggle) toggle.checked = currency.enabled;
-                        
-                        // Update rate input
-                        const rateInput = document.getElementById(`currency-rate-${code}`);
-                        if (rateInput) rateInput.value = currency.rate;
-                    }
-                });
+                // Re-initialize the currency settings to ensure UI elements are recreated with updated values
+                initializeCurrencySettings();
                 
                 // Re-render everything
                 updateAllCalculations();
@@ -606,7 +645,7 @@ function updateUpliftAllocationBar() {
     
     // Update allocation bar
     allocationProgress.style.width = `${Math.min(100, validation.total)}%`;
-    allocationProgress.style.backgroundColor = validation.valid ? '#3498db' : '#e74c3c';
+    allocationProgress.style.backgroundColor = validation.valid ? '#4CAF50' : '#e74c3c';
     allocationPercentage.textContent = validation.total.toFixed(1);
 }
 
@@ -622,7 +661,7 @@ function updateDiscountAllocationBar() {
     
     // Update allocation bar
     allocationProgress.style.width = `${Math.min(100, validation.total)}%`;
-    allocationProgress.style.backgroundColor = validation.valid ? '#3498db' : '#e74c3c';
+    allocationProgress.style.backgroundColor = validation.valid ? '#4CAF50' : '#e74c3c';
     allocationPercentage.textContent = validation.total.toFixed(1);
 }
 
@@ -648,13 +687,25 @@ function updateAllCalculations() {
  * Initialize currency settings
  */
 function initializeCurrencySettings() {
-    const currencyTogglesContainer = document.getElementById('currency-toggles');
-    const currencyRatesContainer = document.getElementById('currency-rates');
+    const currencyListContainer = document.getElementById('currency-list');
     
-    // Create currency toggles and rate inputs
+    // Clear any existing content
+    currencyListContainer.innerHTML = '';
+    
+    // Create currency rows
     Object.entries(projectCalculator.currencies).forEach(([code, currency]) => {
         if (code !== projectCalculator.baseCurrency) {
-            // Create toggle for each non-base currency
+            // Create a row for each non-base currency
+            const currencyRow = document.createElement('div');
+            currencyRow.className = 'currency-row';
+            
+            // Currency code label
+            const currencyLabel = document.createElement('div');
+            currencyLabel.className = 'currency-label';
+            currencyLabel.textContent = code;
+            currencyRow.appendChild(currencyLabel);
+            
+            // Toggle container
             const toggleContainer = document.createElement('div');
             toggleContainer.className = 'currency-toggle';
             
@@ -670,19 +721,19 @@ function initializeCurrencySettings() {
             
             const label = document.createElement('label');
             label.htmlFor = `currency-toggle-${code}`;
-            label.textContent = `${code}`;
+            label.textContent = 'Enable';
             
             toggleContainer.appendChild(checkbox);
             toggleContainer.appendChild(label);
-            currencyTogglesContainer.appendChild(toggleContainer);
+            currencyRow.appendChild(toggleContainer);
             
-            // Create rate input for each non-base currency
-            const rateContainer = document.createElement('div');
-            rateContainer.className = 'currency-rate';
+            // Rate input container
+            const rateInputContainer = document.createElement('div');
+            rateInputContainer.className = 'currency-rate-input';
             
-            const rateLabel = document.createElement('div');
+            const rateLabel = document.createElement('span');
             rateLabel.className = 'currency-rate-label';
-            rateLabel.textContent = `${code}:`;
+            rateLabel.textContent = 'Rate:';
             
             const rateInput = document.createElement('input');
             rateInput.type = 'number';
@@ -699,9 +750,12 @@ function initializeCurrencySettings() {
                 }
             });
             
-            rateContainer.appendChild(rateLabel);
-            rateContainer.appendChild(rateInput);
-            currencyRatesContainer.appendChild(rateContainer);
+            rateInputContainer.appendChild(rateLabel);
+            rateInputContainer.appendChild(rateInput);
+            currencyRow.appendChild(rateInputContainer);
+            
+            // Add the row to the container
+            currencyListContainer.appendChild(currencyRow);
         }
     });
 }
@@ -747,15 +801,21 @@ function updateCurrencyValueDisplay(elementId, value, currencies) {
     const element = document.getElementById(elementId);
     if (!element) return;
     
-    element.innerHTML = '';
+    // Create container for currency conversions
+    const currencyConversions = document.createElement('div');
+    currencyConversions.className = 'currency-conversions';
     
     currencies.forEach(currency => {
         const convertedValue = projectCalculator.convertCurrency(value, currency.code);
-        const currencyItem = document.createElement('span');
+        const currencyItem = document.createElement('div');
         currencyItem.className = 'currency-item';
-        currencyItem.textContent = `${currency.code} ${currency.symbol}${formatCurrency(convertedValue)}`;
-        element.appendChild(currencyItem);
+        currencyItem.textContent = `${currency.code}: ${currency.symbol}${formatCurrency(convertedValue)}`;
+        currencyConversions.appendChild(currencyItem);
     });
+    
+    // Clear previous content and add the new currency conversions
+    element.innerHTML = '';
+    element.appendChild(currencyConversions);
 }
 
 /**
@@ -766,6 +826,19 @@ function updateCurrencyValueDisplay(elementId, value, currencies) {
  */
 function formatNumber(value) {
     return value.toLocaleString('en-US');
+}
+
+/**
+ * Format a number with commas for input fields
+ * 
+ * @param {number} value - Value to format
+ * @returns {string} Formatted number with commas
+ */
+function formatNumberInput(value) {
+    return value.toLocaleString('en-US', {
+        maximumFractionDigits: 0,
+        useGrouping: true
+    });
 }
 
 /**

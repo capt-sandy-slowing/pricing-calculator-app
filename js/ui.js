@@ -1162,21 +1162,25 @@ function updateProjectDisplay() {
 function updateUpliftAllocationBar() {
     const allocationProgress = document.getElementById('uplift-allocation-progress');
     const allocationPercentage = document.getElementById('uplift-allocation-percentage');
+    const allocationTotal = document.getElementById('uplift-allocation-total');
     
     // Get validation results
     const validation = projectCalculator.validateUpliftAllocations();
     
+    // Get allocated percentage (sum of all factors)
+    const allocatedPercentage = validation.total;
+    
     // Calculate remaining percentage (100 - allocated)
-    const remainingPercentage = Math.max(0, 100 - validation.total);
+    const remainingPercentage = Math.max(0, 100 - allocatedPercentage);
     
-    // Update allocation progress bar to show REMAINING percentage (not allocated)
-    // The bar will shrink as more is allocated
-    allocationProgress.style.width = `${remainingPercentage}%`;
+    // Update allocation progress bar to show allocated percentage visually
+    allocationProgress.style.width = `${Math.min(100, allocatedPercentage)}%`;
     
-    // Green when there's still room to allocate, red when it's exactly 100% or overallocated
-    allocationProgress.style.backgroundColor = (validation.valid && remainingPercentage > 0) ? '#4CAF50' : '#e74c3c';
+    // Green when valid (exactly 100%), red when invalid (under or over 100%)
+    allocationProgress.style.backgroundColor = validation.valid ? '#4CAF50' : '#e74c3c';
     
-    // Display the remaining percentage to the user
+    // Display both allocated and remaining percentages to the user
+    allocationTotal.textContent = allocatedPercentage.toFixed(1);
     allocationPercentage.textContent = remainingPercentage.toFixed(1);
 }
 
@@ -1186,21 +1190,25 @@ function updateUpliftAllocationBar() {
 function updateDiscountAllocationBar() {
     const allocationProgress = document.getElementById('discount-allocation-progress');
     const allocationPercentage = document.getElementById('discount-allocation-percentage');
+    const allocationTotal = document.getElementById('discount-allocation-total');
     
     // Get validation results
     const validation = projectCalculator.validateDiscountAllocations();
     
+    // Get allocated percentage (sum of all factors)
+    const allocatedPercentage = validation.total;
+    
     // Calculate remaining percentage (100 - allocated)
-    const remainingPercentage = Math.max(0, 100 - validation.total);
+    const remainingPercentage = Math.max(0, 100 - allocatedPercentage);
     
-    // Update allocation progress bar to show REMAINING percentage (not allocated)
-    // The bar will shrink as more is allocated
-    allocationProgress.style.width = `${remainingPercentage}%`;
+    // Update allocation progress bar to show allocated percentage visually
+    allocationProgress.style.width = `${Math.min(100, allocatedPercentage)}%`;
     
-    // Green when there's still room to allocate, red when it's exactly 100% or overallocated
-    allocationProgress.style.backgroundColor = (validation.valid && remainingPercentage > 0) ? '#4CAF50' : '#e74c3c';
+    // Green when valid (exactly 100%), red when invalid (under or over 100%)
+    allocationProgress.style.backgroundColor = validation.valid ? '#4CAF50' : '#e74c3c';
     
-    // Display the remaining percentage to the user
+    // Display both allocated and remaining percentages to the user
+    allocationTotal.textContent = allocatedPercentage.toFixed(1);
     allocationPercentage.textContent = remainingPercentage.toFixed(1);
 }
 

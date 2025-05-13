@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing Calculator</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pricing Calculator</h1>
+            <p class="subtitle">Calculate project pricing based on business goals and project specifics</p>
+        </header>
+
+        <main>
+            <div class="calculator-grid">
+                <!-- Left panel: Business Model Calculator -->
+                <section class="panel" id="business-model-panel">
+                    <h2>Business Model</h2>
+                    <div class="panel-content">
+                        <div class="input-group">
+                            <h3>Financial Targets</h3>
+                            <div class="form-group">
+                                <label for="salary-budget">Salary Budget (Annual)</label>
+                                <div class="input-with-prefix">
+                                    <span class="prefix">$</span>
+                                    <input type="number" id="salary-budget" min="0" step="1000">
+                                </div>
+                                <small>Total amount needed to cover all salaries</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="growth-budget">Growth Budget (Annual)</label>
+                                <div class="input-with-prefix">
+                                    <span class="prefix">$</span>
+                                    <input type="number" id="growth-budget" min="0" step="1000">
+                                </div>
+                                <small>Total amount needed for future growth</small>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <h3>Team Capacity</h3>
+                            <div class="form-group">
+                                <label for="working-weeks">Working Weeks per Year</label>
+                                <input type="number" id="working-weeks" min="1" max="52" value="48">
+                                <small>Number of weeks planned for work annually</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="team-members">Team Members</label>
+                                <input type="number" id="team-members" min="1" value="1">
+                                <small>Number of available team members</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="hours-per-week">Hours per Week</label>
+                                <input type="number" id="hours-per-week" min="1" max="168" value="35">
+                                <small>Expected working hours per week per person</small>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <h3>Currency Settings</h3>
+                            <div class="currency-settings">
+                                <div class="base-currency-display">Base Currency: <strong id="base-currency-display">NZD</strong></div>
+                                <div class="currency-toggles" id="currency-toggles">
+                                    <!-- Currency toggles will be added here dynamically -->
+                                </div>
+                            </div>
+                            <div class="currency-rates" id="currency-rates">
+                                <!-- Currency rate inputs will be added here dynamically -->
+                            </div>
+                            <small>Enable currencies and set conversion rates (1 NZD = X)</small>
+                        </div>
+
+                        <div class="results-group">
+                            <h3>Calculated Rates</h3>
+                            <div class="result">
+                                <span class="result-label">Total Annual Hours:</span>
+                                <span class="result-value" id="total-hours">0</span>
+                            </div>
+                            <div class="result">
+                                <span class="result-label">Required Hourly Rate:</span>
+                                <span class="result-value"><span class="currency">$</span><span id="required-hourly-rate">0.00</span></span>
+                                <div class="multi-currency" id="hourly-rate-currencies"></div>
+                            </div>
+                            <div class="result">
+                                <span class="result-label">Required Day Rate:</span>
+                                <span class="result-value"><span class="currency">$</span><span id="required-day-rate">0.00</span></span>
+                                <div class="multi-currency" id="day-rate-currencies"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Right panel: Project Pricing Calculator -->
+                <section class="panel" id="project-panel">
+                    <h2>Project Pricing</h2>
+                    <div class="panel-content">
+                        <div class="input-group">
+                            <h3>Project Information</h3>
+                            <div class="form-group">
+                                <label for="client-name">Client Name</label>
+                                <input type="text" id="client-name" placeholder="Enter client name">
+                                <small>Name of the client or project</small>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <h3>Project Tasks</h3>
+                            <div class="task-input">
+                                <div class="form-group">
+                                    <label for="task-name">Task Name</label>
+                                    <input type="text" id="task-name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="task-days">Estimated Days</label>
+                                    <input type="number" id="task-days" min="0.25" step="0.25" value="1">
+                                </div>
+                                <button id="add-task" class="btn">Add Task</button>
+                            </div>
+                            <div class="task-list">
+                                <table id="tasks-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Task</th>
+                                            <th>Days</th>
+                                            <th>Cost</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="task-list-body">
+                                        <!-- Task rows will be added here dynamically -->
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td>Total</td>
+                                            <td id="total-days">0</td>
+                                            <td id="total-cost">$0.00</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="adjustment-panels">
+                            <!-- Uplift Factors -->
+                            <div class="adjustment-panel">
+                                <h3>Uplift Factors</h3>
+                                <div class="form-group">
+                                    <label for="max-uplift">Maximum Uplift Percentage</label>
+                                    <div class="input-with-suffix">
+                                        <input type="number" id="max-uplift" min="0" max="100" value="20">
+                                        <span class="suffix">%</span>
+                                    </div>
+                                </div>
+                                <div class="factor-manager">
+                                    <div class="factor-input">
+                                        <div class="form-group">
+                                            <label for="uplift-factor-name">Factor Name</label>
+                                            <input type="text" id="uplift-factor-name">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="uplift-factor-allocation">Allocation</label>
+                                            <div class="input-with-suffix">
+                                                <input type="number" id="uplift-factor-allocation" min="0" max="100" value="25">
+                                                <span class="suffix">%</span>
+                                            </div>
+                                        </div>
+                                        <button id="add-uplift-factor" class="btn">Add Factor</button>
+                                    </div>
+                                    <div class="allocation-status">
+                                        <div class="allocation-bar">
+                                            <div class="allocation-progress" id="uplift-allocation-progress" style="width: 0%"></div>
+                                        </div>
+                                        <div class="allocation-text">
+                                            <span id="uplift-allocation-percentage">0</span>% of 100% allocated
+                                        </div>
+                                    </div>
+                                    <div class="factor-list" id="uplift-factors-list">
+                                        <!-- Uplift factors will be added here dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Discount Factors -->
+                            <div class="adjustment-panel">
+                                <h3>Discount Factors</h3>
+                                <div class="form-group">
+                                    <label for="max-discount">Maximum Discount Percentage</label>
+                                    <div class="input-with-suffix">
+                                        <input type="number" id="max-discount" min="0" max="100" value="10">
+                                        <span class="suffix">%</span>
+                                    </div>
+                                </div>
+                                <div class="factor-manager">
+                                    <div class="factor-input">
+                                        <div class="form-group">
+                                            <label for="discount-factor-name">Factor Name</label>
+                                            <input type="text" id="discount-factor-name">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="discount-factor-allocation">Allocation</label>
+                                            <div class="input-with-suffix">
+                                                <input type="number" id="discount-factor-allocation" min="0" max="100" value="25">
+                                                <span class="suffix">%</span>
+                                            </div>
+                                        </div>
+                                        <button id="add-discount-factor" class="btn">Add Factor</button>
+                                    </div>
+                                    <div class="allocation-status">
+                                        <div class="allocation-bar">
+                                            <div class="allocation-progress" id="discount-allocation-progress" style="width: 0%"></div>
+                                        </div>
+                                        <div class="allocation-text">
+                                            <span id="discount-allocation-percentage">0</span>% of 100% allocated
+                                        </div>
+                                    </div>
+                                    <div class="factor-list" id="discount-factors-list">
+                                        <!-- Discount factors will be added here dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="results-group">
+                            <h3>Project Summary</h3>
+                            <div class="result">
+                                <span class="result-label">Base Project Cost:</span>
+                                <span class="result-value"><span class="currency">$</span><span id="base-project-cost">0.00</span></span>
+                                <div class="multi-currency" id="base-cost-currencies"></div>
+                            </div>
+                            <div class="result">
+                                <span class="result-label">Applied Uplift:</span>
+                                <span class="result-value"><span id="applied-uplift-percentage">0.00</span>% (<span class="currency">$</span><span id="applied-uplift-amount">0.00</span>)</span>
+                                <div class="multi-currency" id="uplift-amount-currencies"></div>
+                            </div>
+                            <div class="result">
+                                <span class="result-label">Applied Discount:</span>
+                                <span class="result-value"><span id="applied-discount-percentage">0.00</span>% (<span class="currency">$</span><span id="applied-discount-amount">0.00</span>)</span>
+                                <div class="multi-currency" id="discount-amount-currencies"></div>
+                            </div>
+                            <div class="result highlight">
+                                <span class="result-label">Final Project Cost:</span>
+                                <span class="result-value"><span class="currency">$</span><span id="final-project-cost">0.00</span></span>
+                                <div class="multi-currency" id="final-cost-currencies"></div>
+                            </div>
+                            <div class="comparison">
+                                <div class="comparison-row">
+                                    <span class="comparison-label">Required Day Rate:</span>
+                                    <span class="comparison-value"><span class="currency">$</span><span id="comparison-required-day-rate">0.00</span></span>
+                                    <div class="multi-currency" id="comparison-day-rate-currencies"></div>
+                                </div>
+                                <div class="comparison-row">
+                                    <span class="comparison-label">Actual Day Rate:</span>
+                                    <span class="comparison-value"><span class="currency">$</span><span id="actual-day-rate">0.00</span></span>
+                                    <span class="comparison-diff" id="day-rate-diff">(0% difference)</span>
+                                    <div class="multi-currency" id="actual-day-rate-currencies"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <div class="data-actions">
+            <button id="export-project" class="btn btn-primary">Export Project</button>
+            <label for="import-file" class="btn btn-secondary">Import Project</label>
+            <input type="file" id="import-file" accept=".json" style="display: none;">
+        </div>
+
+        <footer>
+            <p>Pricing Calculator - A simple tool for project costing</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="js/model.js"></script>
+    <script src="js/project.js"></script>
+    <script src="js/ui.js"></script>
+</body>
+</html>

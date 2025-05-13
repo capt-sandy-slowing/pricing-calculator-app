@@ -147,10 +147,8 @@ function initializeTaskManagement() {
         taskNameInput.value = '';
         taskDaysInput.value = '1';
         
-        // Update task list
-        renderTaskList();
-        
-        // Update calculations
+        // Update all calculations - use our improved comprehensive update function
+        // This will update both calculations and all UI elements including task list
         updateAllCalculations();
     });
     
@@ -364,7 +362,7 @@ function renderTaskList() {
         deleteButton.className = 'factor-remove';
         deleteButton.addEventListener('click', () => {
             projectCalculator.removeTask(task.id);
-            renderTaskList();
+            // Use our comprehensive update function which will handle renderTaskList
             updateAllCalculations();
         });
         actionsCell.appendChild(deleteButton);
@@ -550,25 +548,30 @@ function initializeExportImport() {
                 document.getElementById('client-name').value = projectCalculator.clientName;
                 document.getElementById('preparer-name').value = projectCalculator.preparerName;
                 
-                // Update all displays with formatted values
+                // Update business model inputs with formatted values
                 document.getElementById('salary-budget').value = formatNumberInput(projectCalculator.businessModel.salaryBudget);
                 document.getElementById('growth-budget').value = formatNumberInput(projectCalculator.businessModel.growthBudget);
                 document.getElementById('working-weeks').value = projectCalculator.businessModel.workingWeeks;
                 document.getElementById('team-members').value = projectCalculator.businessModel.teamMembers;
                 document.getElementById('hours-per-week').value = projectCalculator.businessModel.hoursPerWeek;
                 
+                // Important: Explicitly update rate rounding setting before calculations
+                const rateRoundingSelect = document.getElementById('rate-rounding');
+                rateRoundingSelect.value = projectCalculator.businessModel.rounding || 'none';
+                // Update business model with the correct rounding setting
+                businessModel.setRounding(rateRoundingSelect.value);
+                
+                // Update project-specific values
                 document.getElementById('max-uplift').value = projectCalculator.maxUplift;
                 document.getElementById('max-discount').value = projectCalculator.maxDiscount;
                 
-                // Update currency settings UI
-                // Re-initialize the currency settings to ensure UI elements are recreated with updated values
+                // Currency settings need to be initialized first
                 initializeCurrencySettings();
                 
-                // Re-render everything
+                // Now perform the complete calculation and UI update
+                // Note: Our improved updateAllCalculations handles all UI updates
+                // so we don't need to call individual render functions
                 updateAllCalculations();
-                renderTaskList();
-                renderUpliftFactors();
-                renderDiscountFactors();
                 
                 alert('Project imported successfully');
             } else {
@@ -1045,19 +1048,25 @@ function createFactorItem(factor, onToggle, onRemove) {
     allocationInput.addEventListener('input', () => {
         const newValue = Math.max(1, Math.min(100, parseFloat(allocationInput.value) || 0));
         
+        // Store cursor position to restore it after update
+        const cursorPos = allocationInput.selectionStart;
+        
         // Update the factor allocation using the appropriate method
         if (item.closest('#uplift-factors-list')) {
             projectCalculator.updateUpliftFactorAllocation(factor.id, newValue);
-            // Update just the allocation bar for uplift factors
-            updateUpliftAllocationBar();
         } else if (item.closest('#discount-factors-list')) {
             projectCalculator.updateDiscountFactorAllocation(factor.id, newValue);
-            // Update just the allocation bar for discount factors
-            updateDiscountAllocationBar();
         }
         
-        // Update calculations
+        // Update calculations and all UI elements
+        // Our improved updateAllCalculations function handles all UI updates including allocation bars
         updateAllCalculations();
+        
+        // Restore cursor position after UI update
+        setTimeout(() => {
+            allocationInput.focus();
+            allocationInput.setSelectionRange(cursorPos, cursorPos);
+        }, 0);
     });
     
     // Also keep the change event for when user leaves the field
@@ -1065,6 +1074,16 @@ function createFactorItem(factor, onToggle, onRemove) {
         // Ensure value is set correctly when focus leaves
         const newValue = Math.max(1, Math.min(100, parseFloat(allocationInput.value) || 0));
         allocationInput.value = newValue;
+        
+        // Make sure allocation is fully updated
+        if (item.closest('#uplift-factors-list')) {
+            projectCalculator.updateUpliftFactorAllocation(factor.id, newValue);
+        } else if (item.closest('#discount-factors-list')) {
+            projectCalculator.updateDiscountFactorAllocation(factor.id, newValue);
+        }
+        
+        // Ensure UI is completely updated
+        updateAllCalculations();
     });
     
     allocationContainer.appendChild(allocationInput);
@@ -1171,17 +1190,29 @@ function updateDiscountAllocationBar() {
 
 /**
  * Update all calculations and displays
+ * This is the central function to ensure UI consistency
  */
 function updateAllCalculations() {
-    // Recalculate project costs, which will update task costs with the uplifted day rate
+    // Always recalculate the business model first to ensure accurate base rates
+    businessModel.calculate();
+    
+    // Then recalculate the project, which depends on the business model rates
     projectCalculator.calculate();
     
-    // Update all displays
+    // Update all UI displays in a consistent order
     updateBusinessModelDisplay();
+    
+    // Update factor displays
+    renderUpliftFactors();
+    renderDiscountFactors();
+    
+    // Update task list with latest costs based on updated rates
     renderTaskList();
+    
+    // Update project summary with calculated values
     updateProjectDisplay();
     
-    // Update currency displays
+    // Finally update any currency conversions
     updateCurrencyDisplay();
 }
 
@@ -1243,11 +1274,38 @@ function initializeCurrencySettings() {
             rateInput.min = 0.01;
             rateInput.step = 0.01;
             rateInput.value = currency.rate;
+            // Handle real-time updates with 'input' event
             rateInput.addEventListener('input', () => {
                 const rate = parseFloat(rateInput.value);
                 if (!isNaN(rate) && rate > 0) {
+                    // Store cursor position for better UX
+                    const cursorPos = rateInput.selectionStart;
+                    
+                    // Update the rate in the project calculator
                     projectCalculator.setCurrencyRate(code, rate);
-                    updateCurrencyDisplay();
+                    
+                    // Use our comprehensive update function to ensure all calculations and UI are synced
+                    updateAllCalculations();
+                    
+                    // Restore focus and cursor position
+                    setTimeout(() => {
+                        rateInput.focus();
+                        rateInput.setSelectionRange(cursorPos, cursorPos);
+                    }, 0);
+                }
+            });
+            
+            // Add 'change' event for when focus leaves the field
+            rateInput.addEventListener('change', () => {
+                const rate = parseFloat(rateInput.value);
+                
+                // Validate and correct invalid values
+                if (isNaN(rate) || rate <= 0) {
+                    // Reset to previous valid value and update display
+                    rateInput.value = currency.rate;
+                } else {
+                    // Update currency rate and recalculate everything
+                    projectCalculator.setCurrencyRate(code, rate);
                     updateAllCalculations();
                 }
             });

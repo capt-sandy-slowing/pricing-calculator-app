@@ -455,10 +455,16 @@ function renderDiscountFactors() {
  */
 function initializeProjectInfo() {
     const clientNameInput = document.getElementById('client-name');
+    const preparerNameInput = document.getElementById('preparer-name');
     
     // Add event listener for client name
     clientNameInput.addEventListener('input', () => {
         projectCalculator.setClientName(clientNameInput.value);
+    });
+    
+    // Add event listener for preparer name
+    preparerNameInput.addEventListener('input', () => {
+        projectCalculator.setPreparerName(preparerNameInput.value);
     });
 }
 
@@ -542,6 +548,7 @@ function initializeExportImport() {
             if (success) {
                 // Update UI with imported data
                 document.getElementById('client-name').value = projectCalculator.clientName;
+                document.getElementById('preparer-name').value = projectCalculator.preparerName;
                 
                 // Update all displays with formatted values
                 document.getElementById('salary-budget').value = formatNumberInput(projectCalculator.businessModel.salaryBudget);
@@ -732,6 +739,16 @@ function generateQuoteHTML(quoteData) {
             font-size: 0.9rem;
         }
         
+        .disclaimer {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        
         @media print {
             body {
                 padding: 0;
@@ -749,6 +766,7 @@ function generateQuoteHTML(quoteData) {
             <h1>Project Quote</h1>
             <p>Prepared for ${quoteData.clientName}</p>
             <p><small>Date: ${formattedDate}</small></p>
+            ${quoteData.preparerName ? `<p><small>Quote prepared by ${quoteData.preparerName}</small></p>` : ''}
         </header>
         
         <div class="quote-info">
@@ -823,7 +841,11 @@ function generateQuoteHTML(quoteData) {
         </div>
         ` : ''}
         
-        <footer></footer>
+        <footer>
+            <div class="disclaimer">
+                <p>This quote provided for information purposes only and must be read alongside an accompanying statement of work and project brief.</p>
+            </div>
+        </footer>
     </div>
 </body>
 </html>`;
@@ -895,6 +917,7 @@ function generateQuoteMarkdown(quoteData) {
     const markdown = `# Project Quote
 **Prepared for:** ${quoteData.clientName}  
 **Date:** ${formattedDate}
+${quoteData.preparerName ? `**Quote prepared by:** ${quoteData.preparerName}` : ''}
 
 ## Project Information
 - **Day Rate:** $${formatCurrency(quoteData.dayRate)}
@@ -923,6 +946,8 @@ ${quoteData.currencies.map(currency => {
 ` : ''}
 
 ---
+
+> **Disclaimer:** This quote provided for information purposes only and must be read alongside an accompanying statement of work and project brief.
 `;
 
     // Create file name

@@ -9,6 +9,7 @@ class ProjectCalculator {
         
         // Project info
         this.clientName = "";
+        this.preparerName = "";
         
         // Project tasks
         this.tasks = [];
@@ -124,6 +125,15 @@ class ProjectCalculator {
      */
     setClientName(name) {
         this.clientName = name;
+    }
+    
+    /**
+     * Set preparer name
+     * 
+     * @param {string} name - Name of the person preparing the quote
+     */
+    setPreparerName(name) {
+        this.preparerName = name;
     }
 
     /**
@@ -549,6 +559,7 @@ class ProjectCalculator {
         // Return a client-friendly quote object
         return {
             clientName: this.clientName,
+            preparerName: this.preparerName,
             prepared: new Date().toISOString(),
             dayRate: clientDayRate,
             tasks: clientTasks,
@@ -591,6 +602,7 @@ class ProjectCalculator {
             },
             project: {
                 clientName: this.clientName,
+                preparerName: this.preparerName,
                 tasks: this.tasks,
                 maxUplift: this.maxUplift,
                 upliftFactors: this.upliftFactors,
@@ -644,8 +656,9 @@ class ProjectCalculator {
             
             // Update project data
             if (importData.project) {
-                // Set client name
+                // Set client and preparer names
                 this.clientName = importData.project.clientName || "";
+                this.preparerName = importData.project.preparerName || "";
                 
                 // Clear existing tasks and add imported ones
                 this.tasks = [];

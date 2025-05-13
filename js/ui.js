@@ -1166,10 +1166,16 @@ function updateUpliftAllocationBar() {
     // Get validation results
     const validation = projectCalculator.validateUpliftAllocations();
     
-    // Update allocation bar
+    // Calculate remaining percentage (100 - allocated)
+    const remainingPercentage = Math.max(0, 100 - validation.total);
+    
+    // Update allocation progress bar - we use the allocated percentage for the bar width
+    // but for visual clarity we'll invert the colors (green when remaining, red when overallocated)
     allocationProgress.style.width = `${Math.min(100, validation.total)}%`;
     allocationProgress.style.backgroundColor = validation.valid ? '#4CAF50' : '#e74c3c';
-    allocationPercentage.textContent = validation.total.toFixed(1);
+    
+    // Display the REMAINING percentage to the user
+    allocationPercentage.textContent = remainingPercentage.toFixed(1);
 }
 
 /**
@@ -1182,10 +1188,16 @@ function updateDiscountAllocationBar() {
     // Get validation results
     const validation = projectCalculator.validateDiscountAllocations();
     
-    // Update allocation bar
+    // Calculate remaining percentage (100 - allocated)
+    const remainingPercentage = Math.max(0, 100 - validation.total);
+    
+    // Update allocation progress bar - we use the allocated percentage for the bar width
+    // but for visual clarity we'll invert the colors (green when remaining, red when overallocated)
     allocationProgress.style.width = `${Math.min(100, validation.total)}%`;
     allocationProgress.style.backgroundColor = validation.valid ? '#4CAF50' : '#e74c3c';
-    allocationPercentage.textContent = validation.total.toFixed(1);
+    
+    // Display the REMAINING percentage to the user
+    allocationPercentage.textContent = remainingPercentage.toFixed(1);
 }
 
 /**

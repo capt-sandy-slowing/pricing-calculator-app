@@ -140,7 +140,7 @@ class ProjectCalculator {
             task.id = this.generateId();
         }
         
-        // Calculate task cost based on day rate
+        // Calculate task cost based on day rate (should use the current rate including any rounding)
         task.cost = task.days * this.businessModel.requiredDayRate;
         
         this.tasks.push(task);

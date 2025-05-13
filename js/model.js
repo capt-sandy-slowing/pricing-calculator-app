@@ -55,7 +55,7 @@ class BusinessModel {
         
         // Store the raw (unrounded) rates
         this._rawHourlyRate = this.calculateRequiredHourlyRate();
-        this._rawDayRate = this.calculateRequiredDayRate();
+        this._rawDayRate = this._rawHourlyRate * 8; // Calculate day rate directly from raw hourly rate
         
         // Apply rounding if needed
         this.applyRounding();
@@ -89,7 +89,9 @@ class BusinessModel {
      * @returns {number} Required day rate
      */
     calculateRequiredDayRate() {
-        return this.requiredHourlyRate * 8;
+        // This method should use the parameter it's calculating from, not rely on instance property
+        // that might not be updated yet
+        return this._rawHourlyRate * 8;
     }
 
     /**

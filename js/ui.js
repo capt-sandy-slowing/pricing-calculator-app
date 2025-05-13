@@ -697,6 +697,7 @@ function updateDiscountAllocationBar() {
  */
 function updateAllCalculations() {
     // Update tasks with current day rate
+    // Important: This needs to use the current day rate including any rounding
     projectCalculator.tasks.forEach(task => {
         task.cost = task.days * businessModel.requiredDayRate;
     });

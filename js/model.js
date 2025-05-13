@@ -18,10 +18,12 @@ class BusinessModel {
         this.totalWorkdays = 0;
         this.requiredHourlyRate = 0;
         this.requiredDayRate = 0;
+        this.upliftedDayRate = 0; // Day rate after applying uplift percentage
         
         // Store raw values before rounding
         this._rawHourlyRate = 0;
         this._rawDayRate = 0;
+        this._rawUpliftedDayRate = 0;
     }
 
     /**
@@ -119,12 +121,27 @@ class BusinessModel {
             // Use raw values without rounding
             this.requiredHourlyRate = this._rawHourlyRate;
             this.requiredDayRate = this._rawDayRate;
+            this.upliftedDayRate = this._rawUpliftedDayRate;
         } else {
             // Round to the nearest increment
             const increment = parseInt(this.rounding);
             this.requiredHourlyRate = this.roundToNearest(this._rawHourlyRate, increment);
             this.requiredDayRate = this.roundToNearest(this._rawDayRate, increment);
+            this.upliftedDayRate = this.roundToNearest(this._rawUpliftedDayRate, increment);
         }
+    }
+    
+    /**
+     * Apply global uplift percentage to day rate
+     * 
+     * @param {number} upliftPercentage - Percentage uplift to apply (0-100)
+     */
+    applyUplift(upliftPercentage) {
+        // Calculate uplifted day rate
+        this._rawUpliftedDayRate = this._rawDayRate * (1 + (upliftPercentage / 100));
+        
+        // Apply rounding if needed
+        this.applyRounding();
     }
     
     /**
@@ -154,7 +171,8 @@ class BusinessModel {
             totalHours: this.totalHours,
             totalWorkdays: this.totalWorkdays,
             requiredHourlyRate: this.requiredHourlyRate,
-            requiredDayRate: this.requiredDayRate
+            requiredDayRate: this.requiredDayRate,
+            upliftedDayRate: this.upliftedDayRate
         };
     }
 }

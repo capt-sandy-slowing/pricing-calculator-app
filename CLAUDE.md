@@ -52,6 +52,8 @@ No build, compilation, or server is required. The application runs entirely in t
 5. **Editable factor percentages** - Allow modification of existing factor percentages
 6. **Project export/import functionality** - Save and load project data in JSON format
 7. **Client name tracking** - Associate each project with a client name
+8. **Client quote generation** - Create client-facing quotes that hide internal pricing factors
+9. **Multi-currency support** - Convert pricing to different currencies with customizable rates
 
 ## File Organization
 
@@ -74,30 +76,40 @@ No build, compilation, or server is required. The application runs entirely in t
 The calculator uses these key formulas:
 
 ```
+// Business model calculations
 totalHours = teamMembers * hoursPerWeek * workingWeeks;
+totalWorkdays = 5 * workingWeeks * teamMembers;
 requiredHourlyRate = (salaryBudget + growthBudget) / totalHours;
-requiredDayRate = requiredHourlyRate * 8;
+requiredDayRate = (salaryBudget + growthBudget) / totalWorkdays;
 
-// Project pricing
-baseProjectCost = sum(tasks.map(task => task.days * businessModel.requiredDayRate));
-finalProjectCost = baseProjectCost + upliftAmount - discountAmount;
+// Apply uplift to day rate
+upliftedDayRate = requiredDayRate * (1 + (appliedUplift / 100));
 
-// Uplift and discount calculations
-upliftAmount = baseProjectCost * (appliedUplift / 100);
+// Project pricing with uplifted day rate
+baseProjectCost = sum(tasks.map(task => task.days * upliftedDayRate));
 discountAmount = baseProjectCost * (appliedDiscount / 100);
+finalProjectCost = baseProjectCost - discountAmount;
 
 // Actual rate calculations
 actualDayRate = finalProjectCost / totalDays;
 actualHourlyRate = actualDayRate / 8;
 ```
 
-## Data Persistence
+## Data Persistence and Export
 
-The application uses a simple file-based export/import system:
-- Project data is exported as JSON files
-- Files include both business model and project-specific data
-- Filenames follow the pattern: `clientname_pricing_yyyy-mm-dd.json`
-- JSON schema version tracking ensures forward compatibility
+The application provides multiple export options:
+
+1. **Project Data (JSON)**
+   - Project data is exported as JSON files
+   - Files include both business model and project-specific data
+   - Filenames follow the pattern: `clientname_pricing_yyyy-mm-dd.json`
+   - JSON schema version tracking ensures forward compatibility
+
+2. **Client Quotes**
+   - **HTML Format**: Complete styled document matching the calculator's look
+   - **Markdown Format**: Structured text for importing into other systems
+   - Both formats hide internal pricing factors and show only client-relevant information
+   - Filenames follow the pattern: `clientname_quote_yyyy-mm-dd.html/md`
 
 ## Debugging Tips
 
@@ -107,4 +119,7 @@ Common issues to check:
 - Check that financial inputs are non-negative
 - If calculations appear incorrect, check console logs for errors
 - Make sure all editable percentage fields display properly
+- If quote exports don't download, check browser download settings
+- Verify currency rates are set correctly for accurate conversions
 - Verify export/import functionality with sample data
+- For mobile issues, check responsive breakpoints in CSS

@@ -140,8 +140,10 @@ class ProjectCalculator {
             task.id = this.generateId();
         }
         
-        // Calculate task cost based on day rate (should use the current rate including any rounding)
-        task.cost = task.days * this.businessModel.requiredDayRate;
+        // Calculate task cost based on uplifted day rate if available, otherwise use required day rate
+        const dayRate = this.businessModel.upliftedDayRate > 0 ? 
+            this.businessModel.upliftedDayRate : this.businessModel.requiredDayRate;
+        task.cost = task.days * dayRate;
         
         this.tasks.push(task);
         this.calculate();
@@ -305,13 +307,19 @@ class ProjectCalculator {
      * Perform all project calculations
      */
     calculate() {
-        // Calculate base project cost
-        this.baseProjectCost = this.calculateBaseProjectCost();
-        
-        // Calculate applied uplift percentage and amount
+        // Calculate applied uplift percentage
         this.appliedUplift = this.calculateAppliedUplift();
         
-        // Calculate applied discount percentage and amount
+        // Apply uplift to business model day rate
+        this.businessModel.applyUplift(this.appliedUplift);
+        
+        // Update task costs to use uplifted day rate
+        this.updateTaskCosts();
+        
+        // Calculate base project cost (now includes uplift in the day rate)
+        this.baseProjectCost = this.calculateBaseProjectCost();
+        
+        // Calculate applied discount percentage 
         this.appliedDiscount = this.calculateAppliedDiscount();
         
         // Calculate final project cost
@@ -319,6 +327,17 @@ class ProjectCalculator {
         
         // Calculate actual rates
         this.calculateActualRates();
+    }
+
+    /**
+     * Update all task costs based on the current uplifted day rate
+     */
+    updateTaskCosts() {
+        const dayRate = this.businessModel.upliftedDayRate;
+        
+        this.tasks.forEach(task => {
+            task.cost = task.days * dayRate;
+        });
     }
 
     /**
@@ -376,14 +395,11 @@ class ProjectCalculator {
      * @returns {number} Final project cost
      */
     calculateFinalProjectCost() {
-        // Apply uplift
-        const upliftAmount = this.baseProjectCost * (this.appliedUplift / 100);
-        
-        // Apply discount
+        // Discount is applied to the base cost (which already includes the uplift in the day rate)
         const discountAmount = this.baseProjectCost * (this.appliedDiscount / 100);
         
-        // Calculate final cost
-        return this.baseProjectCost + upliftAmount - discountAmount;
+        // Calculate final cost (base cost minus discount)
+        return this.baseProjectCost - discountAmount;
     }
 
     /**
@@ -465,7 +481,15 @@ class ProjectCalculator {
      * @returns {Object} Project summary
      */
     getSummary() {
-        const upliftAmount = this.baseProjectCost * (this.appliedUplift / 100);
+        // Calculate what the costs would be without the uplift (for display purposes only)
+        const nonUpliftedCost = this.tasks.reduce((total, task) => 
+            total + (task.days * this.businessModel.requiredDayRate), 0);
+        
+        // Calculate effective uplift amount and percentage based on the difference
+        const effectiveUpliftAmount = this.baseProjectCost - nonUpliftedCost;
+        const effectiveUpliftPercentage = nonUpliftedCost > 0 ? 
+            (effectiveUpliftAmount / nonUpliftedCost) * 100 : 0;
+        
         const discountAmount = this.baseProjectCost * (this.appliedDiscount / 100);
         
         return {
@@ -483,17 +507,69 @@ class ProjectCalculator {
             
             baseProjectCost: this.baseProjectCost,
             appliedUplift: this.appliedUplift,
-            upliftAmount,
+            effectiveUpliftPercentage,
+            effectiveUpliftAmount,
             appliedDiscount: this.appliedDiscount,
             discountAmount,
             finalProjectCost: this.finalProjectCost,
             
+            // Day rates
+            upliftedDayRate: this.businessModel.upliftedDayRate,
+            requiredDayRate: this.businessModel.requiredDayRate,
             actualDayRate: this.actualDayRate,
             actualHourlyRate: this.actualHourlyRate,
             rateComparison: this.getRateComparison()
         };
     }
     
+    /**
+     * Prepare client quote data that hides internal factors
+     * 
+     * @returns {Object} Client-friendly quote data
+     */
+    prepareClientQuote() {
+        // We only show the client the uplifted day rate (without mentioning the uplift)
+        const clientDayRate = this.businessModel.upliftedDayRate;
+        
+        // Calculate the discounted project cost 
+        const finalCost = this.finalProjectCost;
+        
+        // Prepare client-facing task list with costs based on uplifted day rate
+        const clientTasks = this.tasks.map(task => ({
+            name: task.name,
+            days: task.days,
+            cost: task.cost, // This cost already includes the uplift in the day rate
+            dayRate: clientDayRate
+        }));
+        
+        // Calculate the project metrics
+        const totalDays = clientTasks.reduce((total, task) => total + task.days, 0);
+        const baseProjectCost = this.baseProjectCost; // This already includes the uplifted day rate
+        
+        // Return a client-friendly quote object
+        return {
+            clientName: this.clientName,
+            prepared: new Date().toISOString(),
+            dayRate: clientDayRate,
+            tasks: clientTasks,
+            totalDays,
+            baseProjectCost,
+            discountPercentage: this.appliedDiscount,
+            discountAmount: baseProjectCost * (this.appliedDiscount / 100),
+            finalCost,
+            currencies: Object.entries(this.currencies)
+                .filter(([_, currency]) => currency.enabled)
+                .map(([code, currency]) => ({
+                    code,
+                    symbol: currency.symbol,
+                    name: currency.name,
+                    rate: currency.rate,
+                    baseCost: this.convertCurrency(baseProjectCost, code),
+                    finalCost: this.convertCurrency(finalCost, code)
+                }))
+        };
+    }
+
     /**
      * Export project data as JSON
      * 
@@ -502,7 +578,7 @@ class ProjectCalculator {
     exportProjectData() {
         // Create data object with project info and business model parameters
         const exportData = {
-            version: "1.2", // Increment version for rounding support
+            version: "1.3", // Increment version for uplifted day rate support
             timestamp: new Date().toISOString(),
             businessModel: {
                 salaryBudget: this.businessModel.salaryBudget,
@@ -511,6 +587,7 @@ class ProjectCalculator {
                 teamMembers: this.businessModel.teamMembers,
                 hoursPerWeek: this.businessModel.hoursPerWeek,
                 rounding: this.businessModel.rounding || 'none',
+                upliftedDayRate: this.businessModel.upliftedDayRate,
             },
             project: {
                 clientName: this.clientName,
@@ -574,6 +651,8 @@ class ProjectCalculator {
                 this.tasks = [];
                 if (importData.project.tasks) {
                     importData.project.tasks.forEach(task => {
+                        // When importing, we'll initially use the required day rate
+                        // The uplifted day rate will be recalculated when we call calculate() below
                         this.tasks.push({
                             id: task.id || this.generateId(),
                             name: task.name,

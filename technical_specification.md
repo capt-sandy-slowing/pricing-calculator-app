@@ -25,6 +25,8 @@ The calculator has two main components:
 - Apply customizable uplift and discount factors to project pricing
 - Calculate final project price with adjustments
 - Compare actual rates to required rates from business model
+- Generate client-facing quotes that hide internal pricing factors
+- Support multiple currency conversions with user-defined rates
 - Validate user inputs for percentage allocations
 
 ### 2.3 Uplift/Discount System
@@ -51,6 +53,8 @@ The calculator has two main components:
 - Uplift/discount factor management interface
 - Project summary with calculated pricing
 - Comparison of actual vs. required rates with visual feedback
+- Currency conversion options for international pricing
+- Client quote generation buttons for HTML and Markdown formats
 
 ### 3.4 User Experience
 - Real-time calculations as inputs change
@@ -118,18 +122,21 @@ SharedComponents
   workingWeeks: Number,        // Weeks per year to work
   teamMembers: Number,         // Available team members
   hoursPerWeek: Number,        // Hours per week per team member
+  rounding: String,            // Rounding option: 'none', '5', '10', etc.
   
   // Calculated fields
   totalHours: Number,          // Total available hours per year
+  totalWorkdays: Number,       // Total workdays per year (5 days per week)
   requiredHourlyRate: Number,  // Hourly rate needed to meet budget
-  requiredDayRate: Number      // Day rate needed to meet budget
+  requiredDayRate: Number,     // Day rate needed to meet budget (based on workdays)
+  upliftedDayRate: Number      // Day rate with uplift applied (for client calculations)
 }
 ```
 
 ### 5.2 Project Data
 ```javascript
 {
-  name: String,                // Project name
+  clientName: String,          // Client name
   
   // Tasks
   tasks: [
@@ -137,7 +144,7 @@ SharedComponents
       id: String,              // Unique identifier
       name: String,            // Task name
       days: Number,            // Estimated days required
-      cost: Number             // Calculated cost based on day rate
+      cost: Number             // Calculated cost based on uplifted day rate
     }
   ],
   
@@ -163,11 +170,25 @@ SharedComponents
     }
   ],
   
+  // Currency settings
+  baseCurrency: String,        // Base currency code (e.g., "NZD")
+  currencies: {
+    [code: String]: {          // Currency code (e.g., "USD", "GBP")
+      code: String,            // Currency code
+      symbol: String,          // Currency symbol (e.g., "$", "£")
+      name: String,            // Currency name
+      rate: Number,            // Conversion rate from base currency
+      enabled: Boolean         // Whether to display this currency
+    }
+  },
+  
   // Calculated fields
-  baseProjectCost: Number,     // Cost before adjustments
+  baseProjectCost: Number,     // Cost with uplifted day rate
   appliedUplift: Number,       // Actual uplift percentage applied
+  effectiveUpliftPercentage: Number, // For display purposes
+  effectiveUpliftAmount: Number,     // For display purposes
   appliedDiscount: Number,     // Actual discount percentage applied
-  finalProjectCost: Number,    // Cost after adjustments
+  finalProjectCost: Number,    // Cost after discount adjustment
   actualHourlyRate: Number,    // Effective hourly rate
   actualDayRate: Number        // Effective day rate
 }
@@ -181,41 +202,99 @@ SharedComponents
 // Total available hours per year
 totalHours = teamMembers * hoursPerWeek * workingWeeks;
 
+// Total workdays per year (5-day work week)
+totalWorkdays = 5 * workingWeeks * teamMembers;
+
 // Required hourly rate
 requiredHourlyRate = (salaryBudget + growthBudget) / totalHours;
 
-// Required day rate (assuming 8-hour days)
-requiredDayRate = requiredHourlyRate * 8;
+// Required day rate (based on workdays, not derived from hourly rate)
+requiredDayRate = (salaryBudget + growthBudget) / totalWorkdays;
+
+// Apply rounding if specified
+if (rounding !== 'none') {
+  const increment = parseInt(rounding);
+  requiredHourlyRate = Math.ceil(requiredHourlyRate / increment) * increment;
+  requiredDayRate = Math.ceil(requiredDayRate / increment) * increment;
+}
 ```
 
 ### 6.2 Project Pricing Calculations
 
 ```javascript
-// Base project cost
-baseProjectCost = sum(tasks.map(task => task.days * businessModel.requiredDayRate));
-
 // Calculate actual uplift percentage
 actualUpliftPercentage = upliftFactors
   .filter(factor => factor.selected)
   .reduce((sum, factor) => sum + (factor.allocation / 100 * maxUplift), 0);
+
+// Apply uplift to day rate
+upliftedDayRate = requiredDayRate * (1 + (actualUpliftPercentage / 100));
+
+// Apply rounding to uplifted day rate if specified
+if (rounding !== 'none') {
+  const increment = parseInt(rounding);
+  upliftedDayRate = Math.ceil(upliftedDayRate / increment) * increment;
+}
+
+// Calculate base project cost using uplifted day rate
+baseProjectCost = sum(tasks.map(task => task.days * upliftedDayRate));
 
 // Calculate actual discount percentage
 actualDiscountPercentage = discountFactors
   .filter(factor => factor.selected)
   .reduce((sum, factor) => sum + (factor.allocation / 100 * maxDiscount), 0);
 
-// Final project cost with adjustments
-upliftAmount = baseProjectCost * (actualUpliftPercentage / 100);
+// Calculate discount amount
 discountAmount = baseProjectCost * (actualDiscountPercentage / 100);
-finalProjectCost = baseProjectCost + upliftAmount - discountAmount;
+
+// Final project cost with discount applied
+finalProjectCost = baseProjectCost - discountAmount;
 
 // Actual rates
 totalProjectDays = sum(tasks.map(task => task.days));
 actualDayRate = finalProjectCost / totalProjectDays;
 actualHourlyRate = actualDayRate / 8;
+
+// Calculate display values for uplift
+nonUpliftedCost = sum(tasks.map(task => task.days * requiredDayRate));
+effectiveUpliftAmount = baseProjectCost - nonUpliftedCost;
+effectiveUpliftPercentage = nonUpliftedCost > 0 ? 
+  (effectiveUpliftAmount / nonUpliftedCost) * 100 : 0;
 ```
 
-### 6.3 Validation Logic
+### 6.3 Client Quote Generation
+
+```javascript
+// Prepare client-friendly quote data
+clientQuote = {
+  clientName: clientName,
+  prepared: new Date().toISOString(),
+  dayRate: upliftedDayRate, // Only show uplifted rate, not the base rate
+  tasks: tasks.map(task => ({
+    name: task.name,
+    days: task.days,
+    cost: task.cost, // Cost already includes uplift in day rate
+    dayRate: upliftedDayRate
+  })),
+  totalDays: sum(tasks.map(task => task.days)),
+  baseProjectCost: baseProjectCost, // Already includes uplift
+  discountPercentage: actualDiscountPercentage,
+  discountAmount: discountAmount,
+  finalCost: finalProjectCost,
+  currencies: Object.entries(currencies)
+    .filter(([_, currency]) => currency.enabled)
+    .map(([code, currency]) => ({
+      code,
+      symbol: currency.symbol,
+      name: currency.name,
+      rate: currency.rate,
+      baseCost: convertCurrency(baseProjectCost, code),
+      finalCost: convertCurrency(finalProjectCost, code)
+    }))
+};
+```
+
+### 6.4 Validation Logic
 
 ```javascript
 // Validate uplift allocations
@@ -257,11 +336,17 @@ discountAllocationRemaining = 100 - discountAllocationSum;
 - Add visual feedback for rate differences
 - Create validation and status messages
 
-#### Phase 5: Refinement and Testing
+#### Phase 5: Export and Multi-Currency Support
+- Implement project export/import functionality
+- Add currency conversion system
+- Create client quote generation in HTML format
+- Create client quote generation in Markdown format
+
+#### Phase 6: Refinement and Testing
 - Enhance UI/UX based on testing
 - Optimize calculations and performance
 - Improve help text and instructions
-- Add data persistence (local storage)
+- Add mobile responsiveness improvements
 
 ### 7.2 Technical Requirements
 

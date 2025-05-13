@@ -636,9 +636,10 @@ tfoot {
     justify-content: center;
     gap: 1rem;
     margin-top: 2rem;
+    flex-wrap: wrap;
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
     .data-actions {
         flex-direction: column;
         align-items: center;
@@ -665,12 +666,21 @@ tfoot {
     color: white;
 }
 
+.btn-accent {
+    background-color: #000;
+    color: white;
+}
+
 .btn-primary:hover {
     background-color: #3d8b40;
 }
 
 .btn-secondary:hover {
     background-color: #0d210f;
+}
+
+.btn-accent:hover {
+    background-color: #333;
 }
 
 /* ================ Footer ================ */

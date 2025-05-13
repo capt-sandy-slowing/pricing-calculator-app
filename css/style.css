@@ -361,10 +361,18 @@ header {
     border-radius: 4px;
     font-weight: 500;
     transition: background-color 0.3s;
+    text-align: center;
 }
 
 .btn:hover {
     background-color: #193a1b;
+}
+
+/* Label styled as button (for file inputs) */
+label.btn {
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
 }
 
 /* Task list table */
@@ -637,9 +645,14 @@ tfoot {
         gap: 0.75rem;
     }
     
-    .data-actions .btn {
+    .data-actions .btn,
+    .data-actions label.btn {
         width: 100%;
         max-width: 250px;
+        display: inline-block;
+        box-sizing: border-box;
+        text-align: center;
+        cursor: pointer;
     }
 }
 

@@ -11,11 +11,16 @@ class BusinessModel {
         this.workingWeeks = 48;
         this.teamMembers = 1;
         this.hoursPerWeek = 35;
+        this.rounding = 'none';
         
         // Calculated fields
         this.totalHours = 0;
         this.requiredHourlyRate = 0;
         this.requiredDayRate = 0;
+        
+        // Store raw values before rounding
+        this._rawHourlyRate = 0;
+        this._rawDayRate = 0;
     }
 
     /**
@@ -35,6 +40,7 @@ class BusinessModel {
         this.workingWeeks = params.workingWeeks ?? this.workingWeeks;
         this.teamMembers = params.teamMembers ?? this.teamMembers;
         this.hoursPerWeek = params.hoursPerWeek ?? this.hoursPerWeek;
+        this.rounding = params.rounding ?? this.rounding;
         
         // Recalculate derived values
         this.calculate();
@@ -47,11 +53,12 @@ class BusinessModel {
         // Calculate total available hours per year
         this.totalHours = this.calculateTotalHours();
         
-        // Calculate required hourly rate to meet financial targets
-        this.requiredHourlyRate = this.calculateRequiredHourlyRate();
+        // Store the raw (unrounded) rates
+        this._rawHourlyRate = this.calculateRequiredHourlyRate();
+        this._rawDayRate = this.calculateRequiredDayRate();
         
-        // Calculate required day rate based on hourly rate
-        this.requiredDayRate = this.calculateRequiredDayRate();
+        // Apply rounding if needed
+        this.applyRounding();
     }
 
     /**
@@ -86,6 +93,43 @@ class BusinessModel {
     }
 
     /**
+     * Set the rounding option and update rates
+     * 
+     * @param {string} rounding - Rounding option: 'none', '5', '10', etc.
+     */
+    setRounding(rounding) {
+        this.rounding = rounding;
+        this.applyRounding();
+    }
+    
+    /**
+     * Apply rounding to rates based on the rounding setting
+     */
+    applyRounding() {
+        if (this.rounding === 'none') {
+            // Use raw values without rounding
+            this.requiredHourlyRate = this._rawHourlyRate;
+            this.requiredDayRate = this._rawDayRate;
+        } else {
+            // Round to the nearest increment
+            const increment = parseInt(this.rounding);
+            this.requiredHourlyRate = this.roundToNearest(this._rawHourlyRate, increment);
+            this.requiredDayRate = this.roundToNearest(this._rawDayRate, increment);
+        }
+    }
+    
+    /**
+     * Round a value to the nearest increment
+     * 
+     * @param {number} value - Value to round
+     * @param {number} increment - Increment to round to
+     * @returns {number} Rounded value
+     */
+    roundToNearest(value, increment) {
+        return Math.ceil(value / increment) * increment;
+    }
+    
+    /**
      * Get a summary of all model parameters and calculated values
      * 
      * @returns {Object} Model summary
@@ -97,6 +141,7 @@ class BusinessModel {
             workingWeeks: this.workingWeeks,
             teamMembers: this.teamMembers,
             hoursPerWeek: this.hoursPerWeek,
+            rounding: this.rounding,
             totalHours: this.totalHours,
             requiredHourlyRate: this.requiredHourlyRate,
             requiredDayRate: this.requiredDayRate

@@ -502,7 +502,7 @@ class ProjectCalculator {
     exportProjectData() {
         // Create data object with project info and business model parameters
         const exportData = {
-            version: "1.1", // Increment version for currency support
+            version: "1.2", // Increment version for rounding support
             timestamp: new Date().toISOString(),
             businessModel: {
                 salaryBudget: this.businessModel.salaryBudget,
@@ -510,6 +510,7 @@ class ProjectCalculator {
                 workingWeeks: this.businessModel.workingWeeks,
                 teamMembers: this.businessModel.teamMembers,
                 hoursPerWeek: this.businessModel.hoursPerWeek,
+                rounding: this.businessModel.rounding || 'none',
             },
             project: {
                 clientName: this.clientName,
@@ -560,6 +561,7 @@ class ProjectCalculator {
                     workingWeeks: importData.businessModel.workingWeeks,
                     teamMembers: importData.businessModel.teamMembers,
                     hoursPerWeek: importData.businessModel.hoursPerWeek,
+                    rounding: importData.businessModel.rounding || 'none',
                 });
             }
             

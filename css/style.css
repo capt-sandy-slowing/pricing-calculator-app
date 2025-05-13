@@ -270,6 +270,12 @@ header {
     color: #193a1b;
 }
 
+.rounded-value {
+    position: relative;
+    text-decoration: underline dotted #3498db;
+    cursor: help;
+}
+
 .base-currency-value {
     font-weight: 500;
     display: flex;

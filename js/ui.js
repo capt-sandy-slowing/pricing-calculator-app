@@ -45,6 +45,7 @@ function initializeBusinessModelInputs() {
     const workingWeeksInput = document.getElementById('working-weeks');
     const teamMembersInput = document.getElementById('team-members');
     const hoursPerWeekInput = document.getElementById('hours-per-week');
+    const rateRoundingSelect = document.getElementById('rate-rounding');
     
     // Add event listeners to update model on input change
     [workingWeeksInput, teamMembersInput, hoursPerWeekInput].forEach(input => {
@@ -86,6 +87,12 @@ function initializeBusinessModelInputs() {
         });
     });
     
+    // Add event listener for rounding dropdown
+    rateRoundingSelect.addEventListener('change', () => {
+        businessModel.setRounding(rateRoundingSelect.value);
+        updateAllCalculations();
+    });
+    
     // Set initial values
     if (businessModel.salaryBudget > 0) {
         salaryBudgetInput.value = formatNumberInput(businessModel.salaryBudget);
@@ -102,6 +109,7 @@ function initializeBusinessModelInputs() {
     workingWeeksInput.value = businessModel.workingWeeks;
     teamMembersInput.value = businessModel.teamMembers;
     hoursPerWeekInput.value = businessModel.hoursPerWeek;
+    rateRoundingSelect.value = businessModel.rounding || 'none';
 }
 
 /**
@@ -271,6 +279,7 @@ function updateBusinessModel() {
     const workingWeeks = parseFloat(document.getElementById('working-weeks').value) || 0;
     const teamMembers = parseFloat(document.getElementById('team-members').value) || 0;
     const hoursPerWeek = parseFloat(document.getElementById('hours-per-week').value) || 0;
+    const rounding = document.getElementById('rate-rounding').value;
     
     // Update business model
     businessModel.update({
@@ -278,7 +287,8 @@ function updateBusinessModel() {
         growthBudget,
         workingWeeks,
         teamMembers,
-        hoursPerWeek
+        hoursPerWeek,
+        rounding
     });
     
     // Update UI
@@ -297,6 +307,23 @@ function updateBusinessModelDisplay() {
     document.getElementById('total-hours').textContent = formatNumber(businessModel.totalHours);
     document.getElementById('required-hourly-rate').textContent = formatCurrency(businessModel.requiredHourlyRate);
     document.getElementById('required-day-rate').textContent = formatCurrency(businessModel.requiredDayRate);
+    
+    // If rounding is applied, show an indicator or tooltip
+    const rateDisplays = document.querySelectorAll('#required-hourly-rate, #required-day-rate');
+    
+    if (businessModel.rounding !== 'none') {
+        // Add a class to indicate rounding is applied
+        rateDisplays.forEach(display => {
+            display.classList.add('rounded-value');
+            display.title = `Rounded up to nearest $${businessModel.rounding}`;
+        });
+    } else {
+        // Remove the class if no rounding
+        rateDisplays.forEach(display => {
+            display.classList.remove('rounded-value');
+            display.title = '';
+        });
+    }
 }
 
 /**

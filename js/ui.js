@@ -1167,21 +1167,20 @@ function updateUpliftAllocationBar() {
     // Get validation results
     const validation = projectCalculator.validateUpliftAllocations();
     
-    // Get allocated percentage (sum of all factors)
-    const allocatedPercentage = validation.total;
-    
-    // Calculate remaining percentage (100 - allocated)
-    const remainingPercentage = Math.max(0, 100 - allocatedPercentage);
+    // These are the key values:
+    // - validation.total: Percentage of the maximum already allocated (across all factors)
+    // - validation.remaining: Percentage of the maximum still available to allocate
     
     // Update allocation progress bar to show allocated percentage visually
-    allocationProgress.style.width = `${Math.min(100, allocatedPercentage)}%`;
+    // Progress bar fills as more of the 100% is allocated
+    allocationProgress.style.width = `${Math.min(100, validation.total)}%`;
     
     // Green when valid (exactly 100%), red when invalid (under or over 100%)
     allocationProgress.style.backgroundColor = validation.valid ? '#4CAF50' : '#e74c3c';
     
     // Display both allocated and remaining percentages to the user
-    allocationTotal.textContent = allocatedPercentage.toFixed(1);
-    allocationPercentage.textContent = remainingPercentage.toFixed(1);
+    allocationTotal.textContent = validation.total.toFixed(1);
+    allocationPercentage.textContent = validation.remaining.toFixed(1);
 }
 
 /**
@@ -1195,21 +1194,20 @@ function updateDiscountAllocationBar() {
     // Get validation results
     const validation = projectCalculator.validateDiscountAllocations();
     
-    // Get allocated percentage (sum of all factors)
-    const allocatedPercentage = validation.total;
-    
-    // Calculate remaining percentage (100 - allocated)
-    const remainingPercentage = Math.max(0, 100 - allocatedPercentage);
+    // These are the key values:
+    // - validation.total: Percentage of the maximum already allocated (across all factors)
+    // - validation.remaining: Percentage of the maximum still available to allocate
     
     // Update allocation progress bar to show allocated percentage visually
-    allocationProgress.style.width = `${Math.min(100, allocatedPercentage)}%`;
+    // Progress bar fills as more of the 100% is allocated
+    allocationProgress.style.width = `${Math.min(100, validation.total)}%`;
     
     // Green when valid (exactly 100%), red when invalid (under or over 100%)
     allocationProgress.style.backgroundColor = validation.valid ? '#4CAF50' : '#e74c3c';
     
     // Display both allocated and remaining percentages to the user
-    allocationTotal.textContent = allocatedPercentage.toFixed(1);
-    allocationPercentage.textContent = remainingPercentage.toFixed(1);
+    allocationTotal.textContent = validation.total.toFixed(1);
+    allocationPercentage.textContent = validation.remaining.toFixed(1);
 }
 
 /**

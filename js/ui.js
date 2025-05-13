@@ -1169,12 +1169,14 @@ function updateUpliftAllocationBar() {
     // Calculate remaining percentage (100 - allocated)
     const remainingPercentage = Math.max(0, 100 - validation.total);
     
-    // Update allocation progress bar - we use the allocated percentage for the bar width
-    // but for visual clarity we'll invert the colors (green when remaining, red when overallocated)
-    allocationProgress.style.width = `${Math.min(100, validation.total)}%`;
-    allocationProgress.style.backgroundColor = validation.valid ? '#4CAF50' : '#e74c3c';
+    // Update allocation progress bar to show REMAINING percentage (not allocated)
+    // The bar will shrink as more is allocated
+    allocationProgress.style.width = `${remainingPercentage}%`;
     
-    // Display the REMAINING percentage to the user
+    // Green when there's still room to allocate, red when it's exactly 100% or overallocated
+    allocationProgress.style.backgroundColor = (validation.valid && remainingPercentage > 0) ? '#4CAF50' : '#e74c3c';
+    
+    // Display the remaining percentage to the user
     allocationPercentage.textContent = remainingPercentage.toFixed(1);
 }
 
@@ -1191,12 +1193,14 @@ function updateDiscountAllocationBar() {
     // Calculate remaining percentage (100 - allocated)
     const remainingPercentage = Math.max(0, 100 - validation.total);
     
-    // Update allocation progress bar - we use the allocated percentage for the bar width
-    // but for visual clarity we'll invert the colors (green when remaining, red when overallocated)
-    allocationProgress.style.width = `${Math.min(100, validation.total)}%`;
-    allocationProgress.style.backgroundColor = validation.valid ? '#4CAF50' : '#e74c3c';
+    // Update allocation progress bar to show REMAINING percentage (not allocated)
+    // The bar will shrink as more is allocated
+    allocationProgress.style.width = `${remainingPercentage}%`;
     
-    // Display the REMAINING percentage to the user
+    // Green when there's still room to allocate, red when it's exactly 100% or overallocated
+    allocationProgress.style.backgroundColor = (validation.valid && remainingPercentage > 0) ? '#4CAF50' : '#e74c3c';
+    
+    // Display the remaining percentage to the user
     allocationPercentage.textContent = remainingPercentage.toFixed(1);
 }
 

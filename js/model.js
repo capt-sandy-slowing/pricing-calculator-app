@@ -15,6 +15,7 @@ class BusinessModel {
         
         // Calculated fields
         this.totalHours = 0;
+        this.totalWorkdays = 0;
         this.requiredHourlyRate = 0;
         this.requiredDayRate = 0;
         
@@ -53,9 +54,12 @@ class BusinessModel {
         // Calculate total available hours per year
         this.totalHours = this.calculateTotalHours();
         
-        // Store the raw (unrounded) rates
+        // Calculate total workdays per year (5 days per week * weeks worked * team members)
+        this.totalWorkdays = 5 * this.workingWeeks * this.teamMembers;
+        
+        // Calculate rates independently (not deriving one from the other)
         this._rawHourlyRate = this.calculateRequiredHourlyRate();
-        this._rawDayRate = this._rawHourlyRate * 8; // Calculate day rate directly from raw hourly rate
+        this._rawDayRate = this.calculateRequiredDayRate();
         
         // Apply rounding if needed
         this.applyRounding();
@@ -83,15 +87,18 @@ class BusinessModel {
     }
 
     /**
-     * Calculate required day rate based on hourly rate
-     * Assumes 8-hour workday
+     * Calculate required day rate based on annual budget and workdays
+     * Assumes 5-day work week
      * 
      * @returns {number} Required day rate
      */
     calculateRequiredDayRate() {
-        // This method should use the parameter it's calculating from, not rely on instance property
-        // that might not be updated yet
-        return this._rawHourlyRate * 8;
+        if (this.totalWorkdays === 0) {
+            return 0;
+        }
+        
+        // Calculate day rate directly from annual budget
+        return (this.salaryBudget + this.growthBudget) / this.totalWorkdays;
     }
 
     /**
@@ -145,6 +152,7 @@ class BusinessModel {
             hoursPerWeek: this.hoursPerWeek,
             rounding: this.rounding,
             totalHours: this.totalHours,
+            totalWorkdays: this.totalWorkdays,
             requiredHourlyRate: this.requiredHourlyRate,
             requiredDayRate: this.requiredDayRate
         };

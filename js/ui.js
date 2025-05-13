@@ -305,6 +305,7 @@ function updateBusinessModel() {
 function updateBusinessModelDisplay() {
     // Update displayed values
     document.getElementById('total-hours').textContent = formatNumber(businessModel.totalHours);
+    document.getElementById('total-workdays').textContent = formatNumber(businessModel.totalWorkdays);
     document.getElementById('required-hourly-rate').textContent = formatCurrency(businessModel.requiredHourlyRate);
     document.getElementById('required-day-rate').textContent = formatCurrency(businessModel.requiredDayRate);
     

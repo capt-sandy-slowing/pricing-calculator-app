@@ -1,0 +1,145 @@
+{
+  "version": "1.3",
+  "timestamp": "2025-05-13T09:30:06.751Z",
+  "businessModel": {
+    "salaryBudget": 135000000,
+    "growthBudget": 450000,
+    "workingWeeks": 52,
+    "teamMembers": 9,
+    "hoursPerWeek": 40,
+    "rounding": "none",
+    "upliftedDayRate": 73079.32692307692
+  },
+  "project": {
+    "clientName": "White Council Expeditions",
+    "tasks": [
+      {
+        "id": "lr1rt56yu",
+        "name": "Hobbit recruitment & birthday party planning",
+        "days": 3,
+        "cost": 219237.98076923075
+      },
+      {
+        "id": "lr2fg67ki",
+        "name": "Rivendell council coordination",
+        "days": 5,
+        "cost": 365396.6346153846
+      },
+      {
+        "id": "lr3jh78rt",
+        "name": "Moria passage route assessment",
+        "days": 8.5,
+        "cost": 621174.2788461539
+      },
+      {
+        "id": "lr4kd93lm",
+        "name": "Lothlorien diplomatic engagement",
+        "days": 4,
+        "cost": 292317.3076923077
+      },
+      {
+        "id": "lr5fg56po",
+        "name": "Amon Hen to Mordor journey planning",
+        "days": 12,
+        "cost": 876951.923076923
+      },
+      {
+        "id": "lr6cv58r4",
+        "name": "Mount Doom ring disposal logistics",
+        "days": 6.5,
+        "cost": 475015.625
+      },
+      {
+        "id": "lr7kl47sm",
+        "name": "Eagle evacuation coordination",
+        "days": 2,
+        "cost": 146158.65384615384
+      },
+      {
+        "id": "lr8bg35fd",
+        "name": "Return to Shire & Scouring operations",
+        "days": 7,
+        "cost": 511555.28846153844
+      },
+      {
+        "id": "lr9tx71pq",
+        "name": "Grey Havens farewell ceremony management",
+        "days": 4,
+        "cost": 292317.3076923077
+      }
+    ],
+    "maxUplift": 35,
+    "upliftFactors": [
+      {
+        "id": "lu1kd93lm",
+        "name": "Nazgûl threat assessment",
+        "allocation": 25,
+        "selected": true
+      },
+      {
+        "id": "lu2fg56po",
+        "name": "Ringbearer burden compensation",
+        "allocation": 30,
+        "selected": true
+      },
+      {
+        "id": "lu3jh78rt",
+        "name": "Mordor environmental hazards",
+        "allocation": 20,
+        "selected": true
+      },
+      {
+        "id": "lu4qw34er",
+        "name": "Multi-species coordination complexity",
+        "allocation": 25,
+        "selected": false
+      }
+    ],
+    "maxDiscount": 20,
+    "discountFactors": [
+      {
+        "id": "ld1rt56yu",
+        "name": "Fellowship loyalty program",
+        "allocation": 40,
+        "selected": true
+      },
+      {
+        "id": "ld2fg67ki",
+        "name": "Saving Middle-earth discount",
+        "allocation": 35,
+        "selected": true
+      },
+      {
+        "id": "ld3ty45ui",
+        "name": "Elven alliance partnership",
+        "allocation": 25,
+        "selected": false
+      }
+    ]
+  },
+  "currencies": {
+    "baseCurrency": "GBP",
+    "rates": {
+      "NZD": {
+        "rate": 2.1,
+        "enabled": false
+      },
+      "USD": {
+        "rate": 1.26,
+        "enabled": true
+      },
+      "AUD": {
+        "rate": 1.92,
+        "enabled": false
+      },
+      "GBP": {
+        "rate": 1,
+        "enabled": true
+      },
+      "EUR": {
+        "rate": 1.17,
+        "enabled": true
+      }
+    }
+  }
+}

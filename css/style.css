@@ -429,14 +429,8 @@ tfoot {
 /* ================ Adjustments Section ================ */
 .adjustment-panels {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 1rem;
-}
-
-@media (max-width: 992px) {
-    .adjustment-panels {
-        grid-template-columns: 1fr;
-    }
 }
 
 .adjustment-panel {
@@ -486,13 +480,13 @@ tfoot {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem;
+    padding: 0.75rem;
     background-color: #f0f7fb;
     border-radius: 4px;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
     .factor-item {
         flex-direction: column;
         align-items: flex-start;
@@ -500,25 +494,36 @@ tfoot {
     
     .factor-details {
         width: 100%;
-        margin-top: 0.5rem;
+        margin-top: 0.75rem;
         justify-content: space-between;
     }
 }
 
 .factor-name {
     font-weight: 500;
+    max-width: 60%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+    .factor-name {
+        max-width: 100%;
+        margin-bottom: 0.5rem;
+    }
 }
 
 .factor-details {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
+    min-width: 150px;
 }
 
 .allocation-edit {
     display: flex;
     align-items: center;
-    margin-right: 0.5rem;
+    min-width: 70px;
 }
 
 .allocation-input {
